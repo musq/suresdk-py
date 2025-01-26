@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from threading import Lock
 
 
 class LazyProxy:
@@ -41,6 +42,7 @@ class LazyProxy:
         self.callback_kwargs = callback_kwargs
         self.resource = None
         self.callback_execution_count = 0
+        self.lock = Lock()
 
     def __repr__(self):
         return (
@@ -68,6 +70,7 @@ class LazyProxy:
             "callback_kwargs",
             "resource",
             "callback_execution_count",
+            "lock",
         ]:
             # If the attribute being set is any of the above (e.g. in the
             # __init__() method above), we directly set it on the object,
@@ -85,21 +88,34 @@ class LazyProxy:
                 ) from e
 
     def initialize_underlying_resource(self):
-        if self.callback_execution_count >= 3:
-            raise RuntimeError(
-                f"{self!r} could not initialize the underlying resource even after 3 tries"
-            )
+        with self.lock:
+            # Acquire a lock to ensure single-writer and avoid the situation of
+            # multiple threads trying to initialize the underlying resource
+            # concurrently.
 
-        try:
-            self.resource = self.callback(**self.callback_kwargs)
-        except Exception as e:
-            raise RuntimeError(
-                f"{self!r} encountered error when trying to initialize the underlying resource"
-            ) from e
-        self.callback_execution_count += 1
+            if self.resource is not None:
+                # Just after acquiring lock, if the current thread sees that
+                # the underlying resource was already initialized by another
+                # concurrent thread, then the current thread proceeds to use
+                # the already initialized resource to avoid executing expensive
+                # re-initialization.
+                return
 
-        if self.resource is None:
-            raise ValueError(
-                f"{self!r} returned None upon initialization. This is not allowed"
-                " because the underlying resource of a LazyProxy cannot be None!"
-            )
+            if self.callback_execution_count >= 3:
+                raise RuntimeError(
+                    f"{self!r} could not initialize the underlying resource even after 3 tries"
+                )
+
+            try:
+                self.resource = self.callback(**self.callback_kwargs)
+            except Exception as e:
+                raise RuntimeError(
+                    f"{self!r} encountered error when trying to initialize the underlying resource"
+                ) from e
+            self.callback_execution_count += 1
+
+            if self.resource is None:
+                raise ValueError(
+                    f"{self!r} returned None upon initialization. This is not allowed"
+                    " because the underlying resource of a LazyProxy cannot be None!"
+                )
