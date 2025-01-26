@@ -69,6 +69,7 @@ def create_meter(
     # use the wrong MeterProvider (the one set by opentelemetry-instrument).
     set_meter_provider(meter_provider)
 
+    # TODO: Add support for "env=..." label
     meter = meter_provider.get_meter(name=name)
 
     _logger.info("OTLP Meter created successfully")
