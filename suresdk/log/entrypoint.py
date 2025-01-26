@@ -9,6 +9,9 @@ from .formatters import ConsoleFormatter
 from .handlers import get_otlp_handler
 from .utils import uncaught_exception_logger
 
+_logger = logging.getLogger(__name__)
+_logger.setLevel(level="INFO")
+
 
 def create_logger(
     name: str,
@@ -17,6 +20,14 @@ def create_logger(
     level: str = "INFO",
     debug: bool = False,
 ) -> logging.LoggerAdapter:
+    _logger.info("Trying to create an OTLP Logger to send logs from this service")
+
+    # We can provide resource details to the OTLP log handler in 3 ways:
+    # - Directly here as resource=Resource.create({"service.name": "dummy_service", "service.namespace": "dummy_repo", "service.version": "xxx", "service.instance.id": "xxx"})
+    # - Command params: opentelemetry-instrument --service_name "dummy_service" --resource_attributes "service.namespace=dummy_repo,service.version=`echo $GIT_HASH`,service.instance.id=`echo $ECS_TASK_ID`" python app.py
+    # - Env variables: OTEL_SERVICE_NAME="dummy_service" OTEL_RESOURCE_ATTRIBUTES="service.namespace=dummy_repo,service.version=`echo $GIT_HASH`,service.instance.id=`echo $ECS_TASK_ID`" opentelemetry-instrument python app.py
+    # NOTE: Prefer env variables to configure resource here
+
     if resource is None:
         resource = Resource.create()
 
@@ -82,6 +93,8 @@ def create_logger(
     logger.setLevel(level.upper())
 
     body_logger = BodyLoggingAdapter(logger=logger)
+
+    _logger.info("OTLP Logger created successfully")
 
     return body_logger
 
