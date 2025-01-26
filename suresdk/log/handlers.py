@@ -4,7 +4,7 @@ import flatten_dict
 from opentelemetry._logs import set_logger_provider
 from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
 from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
-from opentelemetry.sdk._logs.export import BatchLogRecordProcessor, ConsoleLogExporter
+from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.util.types import Attributes
 
@@ -38,11 +38,13 @@ def get_otlp_handler(resource: Resource) -> LoggingHandler:
 
     # Uncomment the following snippet to debug OTLP logs handler. This will
     # print OTLP logs in the console.
-    otlp_logger_provider.add_log_record_processor(
-        BatchLogRecordProcessor(
-            exporter=ConsoleLogExporter(), schedule_delay_millis=3000
-        )
-    )
+    # from opentelemetry.sdk._logs.export import ConsoleLogExporter
+    #
+    # otlp_logger_provider.add_log_record_processor(
+    #     BatchLogRecordProcessor(
+    #         exporter=ConsoleLogExporter(), schedule_delay_millis=3000
+    #     )
+    # )
 
     otlp_handler = BodyLoggingHandler(logger_provider=otlp_logger_provider)
 
@@ -78,6 +80,7 @@ class BodyLoggingHandler(LoggingHandler):
 
             del attributes["body"]
 
+            # https://github.com/ianlini/flatten-dict
             # Convert {"body": {"abc": 123, 78.9: 0.21, "x.y": {"q": 1, 2: {"w.z": "man", 3: "zebra"}}}} to
             # {"body.abc": 123, "body.78.9": 0.21, "body.x.y.q": 1, "body.x.y.2.w.z": "man", "body.x.y.2.3": "zebra"}
             attributes |= flatten_dict.flatten(d={"body": body}, reducer="dot")
