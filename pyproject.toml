@@ -5,7 +5,7 @@ description = "Library for consistent performace and observability"
 authors = [{ name = "Ashish Ranjan", email = "ashish@tug.ro" }]
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = ["opentelemetry-distro[otlp] (>=0.50b0,<0.51)"]
 
 
 [build-system]
