@@ -12,9 +12,9 @@ from .utils import uncaught_exception_logger
 
 def create_logger(
     name: str,
-    resource: Resource | None,
     env: str,
-    level: str,
+    resource: Resource | None = None,
+    level: str = "INFO",
     debug: bool = False,
 ) -> logging.LoggerAdapter:
     if resource is None:
