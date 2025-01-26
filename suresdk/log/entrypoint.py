@@ -17,6 +17,9 @@ def create_logger(
     level: str,
     debug: bool = False,
 ) -> logging.LoggerAdapter:
+    if resource is None:
+        resource = Resource.create()
+
     logging.captureWarnings(True)
     root_logger = logging.getLogger()
 
@@ -45,21 +48,28 @@ def create_logger(
     assert root_logger.hasHandlers(), "Root logger must have at least one handler"
 
     for handler in root_logger.handlers:
-        if resource is not None:
-            if service_namespace := resource.attributes.get(
-                ResourceAttributes.SERVICE_NAMESPACE
-            ):
-                handler.addFilter(AttachKeyValue("repo", service_namespace))
+        if service_namespace := resource.attributes.get(
+            ResourceAttributes.SERVICE_NAMESPACE
+        ):
+            # handler.addFilter(AttachKeyValue("repo", str(service_namespace)))
+            handler.addFilter(
+                AttachKeyValue(
+                    ResourceAttributes.SERVICE_NAMESPACE, str(service_namespace)
+                )
+            )
 
-            if service_name := resource.attributes.get(ResourceAttributes.SERVICE_NAME):
-                handler.addFilter(AttachKeyValue("service", service_name))
+        if service_name := resource.attributes.get(ResourceAttributes.SERVICE_NAME):
+            # handler.addFilter(AttachKeyValue("service", str(service_name)))
+            handler.addFilter(
+                AttachKeyValue(ResourceAttributes.SERVICE_NAME, str(service_name))
+            )
 
         handler.addFilter(AttachKeyValue("env", env))
 
     sys.excepthook = uncaught_exception_logger  # type: ignore
 
     logger = logging.getLogger(name)
-    logger.setLevel(level)
+    logger.setLevel(level.upper())
 
     body_logger = BodyLoggingAdapter(logger=logger)
 

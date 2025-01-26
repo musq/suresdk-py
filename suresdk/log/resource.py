@@ -1,4 +1,4 @@
-from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.resources import Resource, get_aggregated_resources
 
 OTEL_RESOURCE = get_aggregated_resources(
     initial_resource=Resource.create(

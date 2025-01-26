@@ -1,13 +1,15 @@
 import logging
 import traceback
 
-from suresdk.utils import generate_traceback_from_exception_details
+from ..utils import generate_traceback_from_exception_details
 
-# Here we create a dummy LogRecord object by setting its first 7 arguments as "dummy".
-# Then we filter out all the default fields from our received LogRecord object.
-DEFAULT_LOG_RECORD_FIELDS = set(logging.LogRecord(*["dummy"] * 7).__dict__.keys()) | {
-    "message"
-}  # type: ignore
+# Here we create a dummy LogRecord object, then we filter out all the default
+# fields from our received LogRecord object
+DEFAULT_LOG_RECORD_FIELDS = set(
+    logging.LogRecord(
+        name="dummy", level=10, pathname="", lineno=1, msg="", args={}, exc_info=None
+    ).__dict__.keys()
+) | {"message"}
 
 
 def extract_extra_fields(record: logging.LogRecord) -> dict:

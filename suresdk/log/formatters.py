@@ -68,6 +68,7 @@ class JsonFormatter(logging.Formatter):
 
         json_dict.update(extract_extra_fields(record))
 
+        # TODO: Remove this snippet since this has been moved to BodyLoggingAdapter
         # if "body" in json_dict:
         #     body = json_dict["body"]
         #     # Make sure body is a dict
