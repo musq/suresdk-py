@@ -1,4 +1,3 @@
-import json
 import logging
 from typing import Any
 
@@ -16,7 +15,7 @@ class ConsoleFormatter(logging.Formatter):
         funcname = f"{record.module}.{record.funcName}:{record.lineno}"
 
         extra_fields = extract_extra_fields(record)
-        extra_txt = " ".join([f"{k}={v}" for k, v in extra_fields.items()])
+        extra_txt = " | ".join([f"{k}={v}" for k, v in extra_fields.items()])
 
         log_line = f"[{level}] -- {timestamp} -- @{logger} :: (#{funcname}) :: {message} [{extra_txt}]"
 
@@ -68,12 +67,6 @@ class JsonFormatter(logging.Formatter):
 
         json_dict.update(extract_extra_fields(record))
 
-        # TODO: Remove this snippet since this has been moved to BodyLoggingAdapter
-        # if "body" in json_dict:
-        #     body = json_dict["body"]
-        #     # Make sure body is a dict
-        #     assert isinstance(body, dict), f"body must be a dict: body={body}"
-
-        payload = json.dumps(serialize(json_dict))
+        payload = serialize(json_dict)
 
         return f"payload: {payload}"

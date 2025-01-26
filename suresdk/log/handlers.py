@@ -50,6 +50,9 @@ def get_otlp_handler(resource: Resource) -> LoggingHandler:
 
 
 class BodyLoggingHandler(LoggingHandler):
+    """This handler exists to modify the underlying formatter, so we are able
+    to capture contextual information added to logs in the 'body' dict."""
+
     @staticmethod
     def _get_attributes(record: logging.LogRecord) -> Attributes:
         # NOTE: We are converting the type of attributes from Attributes (i.e.
@@ -57,6 +60,15 @@ class BodyLoggingHandler(LoggingHandler):
         # causes errors in the future, we'll avoid converting to dict, and
         # instead allow typing errors below.
         attributes = dict(LoggingHandler._get_attributes(record) or {})
+
+        # CRITICAL: Remove these attributes from OTLP Handler because they are
+        # explicitly added to all the handlers in create_logger() function.
+        # OTLP Handler automatically attaches them from the resource
+        # attributes, so removing them here avoids duplication.
+        attributes.pop("service_namespace", None)
+        attributes.pop("service_name", None)
+        attributes.pop("service_version", None)
+        attributes.pop("service_instance_id", None)
 
         body: dict | None = attributes.get("body")  # type: ignore
 

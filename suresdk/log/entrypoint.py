@@ -51,17 +51,27 @@ def create_logger(
         if service_namespace := resource.attributes.get(
             ResourceAttributes.SERVICE_NAMESPACE
         ):
-            # handler.addFilter(AttachKeyValue("repo", str(service_namespace)))
+            # Repo name
             handler.addFilter(
-                AttachKeyValue(
-                    ResourceAttributes.SERVICE_NAMESPACE, str(service_namespace)
-                )
+                AttachKeyValue("service_namespace", str(service_namespace))
             )
 
         if service_name := resource.attributes.get(ResourceAttributes.SERVICE_NAME):
-            # handler.addFilter(AttachKeyValue("service", str(service_name)))
+            # Service name
+            handler.addFilter(AttachKeyValue("service_name", str(service_name)))
+
+        if service_version := resource.attributes.get(
+            ResourceAttributes.SERVICE_VERSION
+        ):
+            # Repo git sha
+            handler.addFilter(AttachKeyValue("service_version", str(service_version)))
+
+        if service_instance_id := resource.attributes.get(
+            ResourceAttributes.SERVICE_INSTANCE_ID
+        ):
+            # Service deployment task id
             handler.addFilter(
-                AttachKeyValue(ResourceAttributes.SERVICE_NAME, str(service_name))
+                AttachKeyValue("service_instance_id", str(service_instance_id))
             )
 
         handler.addFilter(AttachKeyValue("env", env))
