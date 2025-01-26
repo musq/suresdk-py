@@ -3,6 +3,8 @@ from collections.abc import Callable
 
 class LazyProxy:
     """
+    A proxy helper to lazy load resources.
+
     BEWARE: You are (kinda) entering Metaprogramming Territory!!
 
     DO NOT MODIFY this class, unless you are sure how Python handles attribute access,
