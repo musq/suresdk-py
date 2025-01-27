@@ -1,12 +1,13 @@
 import fnmatch
+import logging
+import os
 from abc import ABC
 from collections.abc import Callable
 from operator import attrgetter
 from signal import SIGINT, SIGTERM, signal, strsignal
 from typing import Any, Self
 
-from common.domain.errors import RetriableRepeatableReadError
-from common.utils import LOG, Config
+from common.utils import Config
 from common.utils.apm import profile_function, profile_snippet
 from confluent_kafka import (
     Consumer,
@@ -22,7 +23,10 @@ from tenacity import (
     wait_incrementing,
 )
 
+from ..errors import RetriableRepeatableReadError
 from ..utils import csv_to_list, group_by
+
+_logger = logging.getLogger(__name__)
 
 
 def execute_with_retries(callback: Callable, max_attempts: int = 5, **callback_kwargs):
@@ -137,8 +141,8 @@ class KafkaProcessor(ABC):
         # environment variable by default i.e. without assistance as follows. This env
         # var works fine with dpkp/kafka-python library.
         # https://github.com/confluentinc/confluent-kafka-python/issues/527#issuecomment-512773232
-        if Config.SSL_CERT_FILE:
-            self.kafka_consumer_config["ssl.ca.location"] = Config.SSL_CERT_FILE
+        if SSL_CERT_FILE := os.environ.get("SSL_CERT_FILE"):
+            self.kafka_consumer_config["ssl.ca.location"] = SSL_CERT_FILE
 
     def __enter__(self) -> Self:
         self.original_sigint_handler = signal(SIGINT, self.handle_interrupt)
@@ -160,7 +164,7 @@ class KafkaProcessor(ABC):
         finishing the current task.
         """
         self.interrupted = True
-        LOG.warning(
+        _logger.warning(
             f"Interrupt received <signal={strsignal(signalnum)}:{signalnum}>, will exit after processing current loop"
         )
 
@@ -172,7 +176,7 @@ class KafkaProcessor(ABC):
             ).items()
         }
         if topic_vs_partitions:
-            LOG.warning(
+            _logger.warning(
                 "Revoked partitions",
                 extra={"body": {"topic_vs_partitions": topic_vs_partitions}},
             )
@@ -185,7 +189,7 @@ class KafkaProcessor(ABC):
             ).items()
         }
         if topic_vs_partitions:
-            LOG.warning(
+            _logger.warning(
                 "Assigned partitions",
                 extra={"body": {"topic_vs_partitions": topic_vs_partitions}},
             )
@@ -244,7 +248,7 @@ class KafkaProcessor(ABC):
         return offsets_to_commit
 
     def run_forever(self):
-        LOG.info(
+        _logger.info(
             "Listening for messages in Kafka",
             extra={"body": {"topics": self.kafka_topics}},
         )
