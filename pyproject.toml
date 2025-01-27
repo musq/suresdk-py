@@ -13,6 +13,10 @@ dependencies = [
 ]
 
 
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.14.1"
+
+
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
