@@ -16,36 +16,17 @@ from confluent_kafka import (
     Message,
     TopicPartition,
 )
-from tenacity import (
-    Retrying,
-    retry_if_exception_type,
-    stop_after_attempt,
-    wait_incrementing,
-)
 
-from ..errors import RetriableRepeatableReadError
-from ..utils import csv_to_list, group_by
+from ..utils import csv_to_list, execute_with_retries, group_by
 
 _logger = logging.getLogger(__name__)
-
-
-def execute_with_retries(callback: Callable, max_attempts: int = 5, **callback_kwargs):
-    for attempt in Retrying(
-        retry=retry_if_exception_type(RetriableRepeatableReadError),
-        stop=stop_after_attempt(max_attempts),
-        wait=wait_incrementing(start=1, increment=1, max=5),
-    ):
-        with attempt:
-            return callback(**callback_kwargs)
 
 
 def message_belongs_to_current_consumer(
     current_consumer: str | None, target_consumers: str | None
 ) -> bool:
     """
-    If current_consumer = "abc"
-
-    Supported target_consumers which match "abc":
+    Supported target_consumers which match current_consumer="abc":
     None
     ""
     "*"
@@ -60,7 +41,7 @@ def message_belongs_to_current_consumer(
     "*,-xy*"
     "-xy*,-pq*"
 
-    Supported target_consumers which don't match "abc":
+    Supported target_consumers which don't match current_consumer="abc":
     "xyz"
     "xy*"
     "*yz"
