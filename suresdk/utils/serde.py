@@ -16,7 +16,7 @@ def serialize(obj) -> str:
     changed since last time.
     """
 
-    return json.dumps(_serialize(obj))
+    return json.dumps(_serialize(obj), sort_keys=True)
 
 
 def _serialize(obj):
