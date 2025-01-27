@@ -1,4 +1,5 @@
 from .proxy import LazyProxy  # noqa: F401
+from .retry import execute_with_retries  # noqa: F401
 from .serde import serialize  # noqa: F401
 from .utils import (
     chunked,  # noqa: F401
