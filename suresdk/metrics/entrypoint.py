@@ -3,10 +3,7 @@ import logging
 from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
 from opentelemetry.metrics import set_meter_provider
 from opentelemetry.sdk.metrics import Meter, MeterProvider
-from opentelemetry.sdk.metrics.export import (
-    ConsoleMetricExporter,
-    PeriodicExportingMetricReader,
-)
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.sdk.resources import Resource
 
 _logger = logging.getLogger(__name__)
@@ -41,10 +38,6 @@ def create_meter(
         # - Or, just before exiting the Python interpreter
         export_interval_millis=2500,
     )
-    console_reader = PeriodicExportingMetricReader(
-        exporter=ConsoleMetricExporter(),
-        export_interval_millis=2500,
-    )
 
     metric_readers = []
     if not debug:
@@ -52,7 +45,13 @@ def create_meter(
 
         # Uncomment the following snippet to debug OTLP metrics. This will
         # print OTLP metrics in the console.
-        metric_readers.append(console_reader)
+        # from opentelemetry.sdk.metrics.export import ConsoleMetricExporter
+        #
+        # console_reader = PeriodicExportingMetricReader(
+        #     exporter=ConsoleMetricExporter(),
+        #     export_interval_millis=2500,
+        # )
+        # metric_readers.append(console_reader)
 
     meter_provider = MeterProvider(resource=resource, metric_readers=metric_readers)
 
