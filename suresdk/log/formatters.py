@@ -17,7 +17,7 @@ class ConsoleFormatter(logging.Formatter):
         extra_fields = extract_extra_fields(record)
         extra_txt = " | ".join([f"{k}={v}" for k, v in extra_fields.items()])
 
-        log_line = f"[{level}] -- {timestamp} -- @{logger} :: (#{funcname}) :: {message} [{extra_txt}]"
+        log_line = f"{timestamp} -- [{level}] -- @{logger} :: (#{funcname}) :: {message} [{extra_txt}]"
 
         # If we are logging an exception, and exc_info, & exc_info[0] (i.e.
         # exc_info.exc_type) are present for this log record, then we also attach the

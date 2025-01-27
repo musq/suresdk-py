@@ -10,7 +10,6 @@ from .handlers import get_otlp_handler
 from .utils import uncaught_exception_logger
 
 _logger = logging.getLogger(__name__)
-_logger.setLevel(level="INFO")
 
 
 def create_logger(
@@ -20,7 +19,7 @@ def create_logger(
     level: str = "INFO",
     debug: bool = False,
 ) -> logging.LoggerAdapter:
-    _logger.info("Trying to create an OTLP Logger to send logs from this service")
+    _logger.info("Trying to create an OTLP Logger to send logs")
 
     # We can provide resource details to the OTLP log handler in 3 ways:
     # - Directly here as resource=Resource.create({"service.name": "dummy_service", "service.namespace": "dummy_repo", "service.version": "xxx", "service.instance.id": "xxx"})
